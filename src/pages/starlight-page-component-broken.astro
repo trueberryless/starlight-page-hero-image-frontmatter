@@ -6,8 +6,72 @@ if (!entry) {
   throw new Error('Could not find example docs entry');
 }
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
+
+let darkImage: ImageMetadata | undefined;
+let lightImage: ImageMetadata | undefined;
+let rawHtml: string | undefined;
+const image = entry.data.hero?.image;
+
+if (image) {
+	if ('file' in image) {
+		darkImage = image.file;
+	} else if ('dark' in image) {
+		darkImage = image.dark;
+		lightImage = image.light;
+	} else {
+		rawHtml = image.html;
+	}
+}
 ---
 
-<StarlightPage frontmatter={remarkPluginFrontmatter} headings={headings}>
-	<Content />
-</StarlightPage>
+{
+  !darkImage && !lightImage && !rawHtml && (
+    <StarlightPage
+      frontmatter={{
+        ...remarkPluginFrontmatter as any,
+      }}
+      headings={headings}
+    >
+      <Content />
+    </StarlightPage>
+  )
+}
+{
+  darkImage && lightImage && (
+    <StarlightPage
+      frontmatter={{
+        ...remarkPluginFrontmatter as any,
+        hero: { image: { dark: darkImage, light: lightImage } },
+      }}
+      headings={headings}
+    >
+      <Content />
+    </StarlightPage>
+  )
+}
+{
+  darkImage && !lightImage && (
+    <StarlightPage
+      frontmatter={{
+        ...remarkPluginFrontmatter as any,
+        hero: { image: { file: darkImage } },
+      }}
+      headings={headings}
+    >
+      <Content />
+    </StarlightPage>
+  )
+}
+{
+  rawHtml && (
+    <StarlightPage
+      frontmatter={{
+        ...remarkPluginFrontmatter as any,
+        hero: { image: { html: rawHtml } },
+      }}
+      headings={headings}
+    >
+      <Content />
+    </StarlightPage>
+  )
+}
